@@ -378,7 +378,7 @@
 
     function increaseR() {
       if (money >= 100 * progress) {
-        money -= 100;
+        money -= 100 * progress;
         upgradeR += 0.1; // Increase collection rate by 10%
         description = `Resource collection rate increased by 10%. Current rate: X${upgradeR.toFixed(2)}`;
         progress += 0.15; // Increase progress for next upgrade
@@ -390,7 +390,7 @@
  
     function increaseS() {
       if (money >= 250 * progress) {
-        money -= 250;
+        money -= 250 * progress;
         upgradeS += 0.05; // Increase sell rate by 5%
         description = `Sell rate increased by 5%. Current rate: X${upgradeS.toFixed(2)
 }`;
