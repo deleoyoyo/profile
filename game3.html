@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Game Luck</title>
+  <style>
+    body {
+      background-color: black;
+      color: white;
+      font-family: 'Segoe UI', sans-serif;
+      text-align: center;
+      padding-top: 50px;
+    }
+
+    .button {
+      background: linear-gradient(135deg, blue, lightblue);
+      border: none;
+      border-radius: 35%;
+      padding: 32px 70px;
+      font-size: 24px;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.3s, opacity 0.3s;
+      color: white;
+    }
+
+    .button:hover:not(:disabled) {
+      transform: scale(1.05);
+      box-shadow: 0 0 20px darkblue;
+    }
+
+    .button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+      background: linear-gradient(135deg, #666, #999);
+    }
+
+    #demo {
+      font-size: 2.5em;
+      margin-top: 30px;
+      transition: all 0.5s ease;
+    }
+
+    .flash {
+      animation: flashEffect 0.6s ease-out;
+    }
+
+    @keyframes flashEffect {
+      0%   { transform: scale(1); opacity: 1; }
+      50%  { transform: scale(1.5); opacity: 0.8; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .countdown {
+      font-size: 0.8em;
+      color: #ccc;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Game</h1>
+  <button onclick="luck()" class="button" id="roller">Roll</button>
+  <div id="countdown" class="countdown"></div>
+  <h1 id="demo">Press the button</h1>
+  <h3 id="counter">0</h3>
+
+  <h2 id="c">amount of Common:</h2>
+  <h2 id="u">amount of Uncommon:</h2>
+  <h2 id="r">amount of Rare:</h2>
+  <h2 id="e">amount of Epic:</h2>
+  <h2 id="l">amount of Legendary:</h2>
+  <h2 id="m">amount of Mythic:</h2>
+  <h2 id="ee">amount of Exotic:</h2>
+  <h2 id="d">amount of Divine:</h2>
+  <h2 id="ce">amount of Celestial:</h2>
+  <h2 id="g">amount of Godlike:</h2>
+
+  <script>
+    let counter = 0;
+    let c = 0, u = 0, r = 0, e = 0, l = 0, m = 0, ee = 0, d = 0, ce = 0, g = 0;
+    let isRolling = false;
+
+    function flashText(textElement) {
+      textElement.classList.remove("flash");
+      void textElement.offsetWidth; // reflow trick to restart animation
+      textElement.classList.add("flash");
+    }
+
+    function sleep(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    function startCountdown() {
+      const countdownElement = document.getElementById("countdown");
+      let timeLeft = 1;
+      
+      const countdownInterval = setInterval(() => {
+        if (timeLeft > 0) {
+          countdownElement.textContent = `Wait ${timeLeft} second${timeLeft > 1 ? 's' : ''}...`;
+          timeLeft--;
+        } else {
+          countdownElement.textContent = "";
+          clearInterval(countdownInterval);
+        }
+      }, 1000);
+    }
+
+    async function luck() {
+      // Prevent multiple clicks
+      if (isRolling) return;
+      
+      const demo = document.getElementById("demo");
+      const roller = document.getElementById("roller");
+
+      // Set rolling state and disable button
+      isRolling = true;
+      roller.disabled = true;
+      roller.textContent = "Rolling...";
+      
+      // Start countdown display
+      startCountdown();
+
+      let rare = Math.floor(Math.random() * 10010) + 1;
+
+      if (rare <= 2) { // 0.02%
+        g++;
+        demo.innerHTML = "👑 Godlike 0.02%";
+        demo.style.color = "magenta";
+        document.getElementById("g").innerHTML = "Amount of Godlike: " + g;
+      } else if (rare <= 10) { // 0.08%
+        ce++;
+        demo.innerHTML = "🌌 Celestial 0.08%";
+        demo.style.color = "deepskyblue";
+        document.getElementById("ce").innerHTML = "Amount of Celestial: " + ce;
+      } else if (rare <= 20) { // 0.1%
+        d++;
+        demo.innerHTML = "✨ Divine 0.1%";
+        demo.style.color = "gold";
+        document.getElementById("d").innerHTML = "Amount of Divine: " + d;
+      } else if (rare <= 54) { // 0.34%
+        ee++;
+        demo.innerHTML = "🎆 Exotic 0.34%";
+        demo.style.color = "white";
+        document.getElementById("ee").innerHTML = "Amount of Exotic: " + ee;
+      } else if (rare <= 104) { // 0.5%
+        m++;
+        demo.innerHTML = "🔥 Mythic 0.5%";
+        demo.style.color = "red";
+        document.getElementById("m").innerHTML = "Amount of Mythic: " + m;
+      } else if (rare <= 204) { // 1%
+        l++;
+        demo.innerHTML = "🌟 Legendary 1%";
+        demo.style.color = "yellow";
+        document.getElementById("l").innerHTML = "Amount of Legendary: " + l;
+      } else if (rare <= 1104) { // 9%
+        e++;
+        demo.innerHTML = "💎 Epic 9%";
+        demo.style.color = "purple";
+        document.getElementById("e").innerHTML = "Amount of Epic: " + e;
+      } else if (rare <= 2604) { // 15%
+        r++;
+        demo.innerHTML = "🔷 Rare 15%";
+        demo.style.color = "blue";
+        document.getElementById("r").innerHTML = "Amount of Rare: " + r;
+      } else if (rare <= 5504) { // 29%
+        u++;
+        demo.innerHTML = "🟢 Uncommon 29%";
+        demo.style.color = "green";
+        document.getElementById("u").innerHTML = "Amount of Uncommon: " + u;
+      } else { // 45%
+        c++;
+        demo.innerHTML = "⚪ Common 45%";
+        demo.style.color = "grey";
+        document.getElementById("c").innerHTML = "Amount of Common: " + c;
+      }
+
+      counter++;
+      document.getElementById("counter").innerText = "Rolls: " + counter;
+      flashText(demo);
+
+      // Wait for 2 seconds before re-enabling
+      await sleep(2000);
+      
+      // Re-enable button and reset state
+      roller.disabled = false;
+      roller.textContent = "Roll";
+      isRolling = false;
+    }
+  </script>
+
+</body>
+</html>
