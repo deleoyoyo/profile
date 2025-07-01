@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Roller game</title>
+  <style>
+    body {
+      background: #111;
+      color: white;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding-top: 60px;
+    }
+    h1 {
+      font-size: 40px;
+    }
+    .button {
+      padding: 12px 24px;
+      font-size: 20px;
+      background: #2196f3;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      margin: 5px;
+    }
+    .result {
+      margin-top: 30px;
+      font-size: 28px;
+    }
+    #coinDisplay {
+      margin-top: 15px;
+      font-size: 22px;
+    }
+
+    .common { color: #b0b0b0; }
+    .uncommon { color: #4caf50; font-weight: 500; }
+    .rare { color: #2196f3; font-weight: 500; }
+    .epic { color: #9c27b0; font-weight: bold; }
+    .legendary { color: #ff9800; font-weight: bold; text-shadow: 0 0 4px #ff9800; }
+    .mythic { color: #e91e63; font-weight: bold; text-shadow: 0 0 6px #e91e63; }
+    .ultrarare { color: #ff1744; font-weight: bold; text-shadow: 0 0 8px #ff1744; }
+    .cosmic { color: #00e5ff; font-weight: bold; text-shadow: 0 0 10px #00e5ff, 0 0 15px #00e5ff; }
+
+    #multiResults {
+      margin-top: 20px;
+    }
+
+    .roll-result {
+      font-size: 20px;
+      margin: 6px 0;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🎲 Gacha</h1>
+  <button class="button" onclick="roll()">Roll</button>
+  <button class="button" onclick="rollTen()">Roll 10 Times</button>
+
+  <h1 id="resultText" class="result">---</h1>
+  <h2 id="coinDisplay">value: ???</h2>
+  <h3 id="best"></h3>
+  <div id="multiResults"></div>
+
+  <script>
+    let best = 0;
+    let bestMessage = "";
+    let odds = 0;
+
+    function mutations(multiplier) {
+      let list = [];
+
+      const effects = [
+        { chance: Math.floor(Math.random() * 10), name: "❄️ Frozen", mult: 10 },
+        { chance: Math.floor(Math.random() * 20), name: "💰 Gold", mult: 20 },
+        { chance: Math.floor(Math.random() * 60), name: "🌈 Rainbow", mult: 50 },
+        { chance: Math.floor(Math.random() * 100), name: "⚡️ Shocked", mult: 100 },
+        { chance: Math.floor(Math.random() * 150), name: "🌀 Swirled", mult: 150 },
+        { chance: Math.floor(Math.random() * 250), name: "🌟 Starry", mult: 200 },
+        { chance: Math.floor(Math.random() * 500), name: "💫 Sparkling", mult: 300 },
+        { chance: Math.floor(Math.random() * 750), name: "🌌 Spacelike", mult: 350 }
+      ];
+
+      for (const effect of effects) {
+        if (effect.chance <= odds) {
+          list.push(effect.name);
+          multiplier *= effect.mult;
+        }
+      }
+
+      return {
+        text: list.length > 0 ? `(${list.join(", ")})` : "",
+        multiplier
+      };
+    }
+
+    function getItem() {
+      let multiplier = 1;
+      let value = 0;
+      let kilo = Math.floor(Math.random() * 100);
+      const roll = Math.random() * 10000;
+      let result, className;
+
+      if (roll < 1) {
+        result = "🌌 Cosmic";
+        className = "cosmic";
+        value = 100000;
+      } else if (roll < 21) {
+        result = "🟥 Ultra Rare";
+        className = "ultrarare";
+        value = 75000;
+      } else if (roll < 176) {
+        result = "🟨 Mythic";
+        className = "mythic";
+        value = 15000;
+      } else if (roll < 350) {
+        result = "🟪 Legendary";
+        className = "legendary";
+        value = 7500;
+      } else if (roll < 900) {
+        result = "🟦 Epic";
+        className = "epic";
+        value = 500;
+      } else if (roll < 2000) {
+        result = "🟩 Rare";
+        className = "rare";
+        value = 100;
+      } else if (roll < 5000) {
+        result = "🟨 Uncommon";
+        className = "uncommon";
+        value = 25;
+      } else {
+        result = "⚪️ Basic";
+        className = "common";
+        value = 10;
+      }
+
+      const mutationData = mutations(multiplier);
+      multiplier = mutationData.multiplier;
+      value *= kilo * multiplier;
+      const message = `${mutationData.text} ${result} item, kilos: ${kilo}`;
+      
+      if (value > best) {
+        best = value;
+        bestMessage = `Best item: ${message} | 💰 Total value: ${best.toLocaleString()}`;
+      }
+
+      return {
+        message: message,
+        className: className,
+        value: value
+      };
+    }
+
+    function roll() {
+      const result = getItem();
+
+      const resultDiv = document.getElementById("resultText");
+      resultDiv.innerText = "You got a " + result.message;
+      resultDiv.className = result.className;
+
+      document.getElementById("coinDisplay").innerText = "💰 value: " + result.value.toLocaleString();
+      document.getElementById("best").innerText = bestMessage;
+      document.getElementById("multiResults").innerHTML = ""; // Clear multi results
+    }
+
+    function rollTen() {
+      const container = document.getElementById("multiResults");
+      container.innerHTML = ""; // Clear previous
+
+      for (let i = 0; i < 10; i++) {
+        const result = getItem();
+        const div = document.createElement("div");
+        div.className = `roll-result ${result.className}`;
+        div.innerText = `Roll ${i + 1}: ${result.message} | 💰 ${result.value.toLocaleString()}`;
+        container.appendChild(div);
+      }
+
+      document.getElementById("resultText").innerText = "🎲 10 Rolls Complete!";
+      document.getElementById("coinDisplay").innerText = "";
+      document.getElementById("best").innerText = bestMessage;
+    }
+  </script>
+
+</body>
+</html>
