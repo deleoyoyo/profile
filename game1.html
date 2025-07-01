@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Game Luck</title>
+  <style>
+    body {
+      background-color: black;
+      color: white;
+      font-family: 'Segoe UI', sans-serif;
+      text-align: center;
+      padding-top: 50px;
+    }
+    .Mbutton {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      font-size: 40px;
+      cursor: pointer;
+      width: 300px;
+      height: 80px;
+      margin-bottom: 30px;
+    }
+
+    .Gainbutton {
+      background-color: #008CBA;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      font-size: 20px;
+      cursor: pointer;
+      width: 300px;
+      height: 80px;
+      margin-bottom: 30px;
+    }
+    h1 {
+      font-size: 3.5em;
+      margin-top: 30px;
+    }
+
+    
+  </style>
+</head>
+<body>
+
+  <h1>Day <span id="day">1</span></h1>
+  <h2 id="rank"></h2>
+  <button id="dayButton" onclick="runGame()" class="Mbutton">Start Day</button>
+  <h1><span id="dis"></span></h1>
+
+  <h2>Wood: <span id="wood">50 (buy price: 8/sell price: 5)</span></h2>
+  <h2>Stone: <span id="stone">40 (buy price: 5/sell price: 3)</span></h2>
+  <h2>Iron: <span id="iron">30 (buy price: 25/sell price: 10)</span></h2>
+  <h2>Animals: <span id="animal">5 (buy price: 50/sell price: 20)</span></h2>
+  <h2>Money: <span id="money">200</span></h2>
+  <h2>Humans: <span id="humans">10</span></h2>
+
+  <h1>Trade Center</h1>
+  <button onclick="getHuman()" class="Gainbutton">Increase population by: 
+  <input type="number" id="people" placeholder="15 wood, 3 animal, 25$"></button>
+
+  <button onclick="sell()" class="Gainbutton">Sell: <input type="text" id="source" placeholder="amount">
+  Amount: <input type="number" id="amount" placeholder="amount"></button>
+
+  <button onclick="trade()" class="Gainbutton">Trade: <input type="text" id="item" placeholder="5 to 1"></button>
+
+  <button onclick="buy()" class="Gainbutton">Buy: <input type="text" id="buyer" placeholder="type">
+    Amount: <input type="number" id="bulk" placeholder="amount"></button></button>
+
+  <h1>Upgrades</h1>
+  <button onclick="increaseR()" class="Gainbutton">Upgrade Resource Collection Rate <span id="costR">100$</span> (+10%)</button>
+  <button onclick="increaseS()" class="Gainbutton">Upgrade Sell Per Item Rate <span id="costS">250$</span> (+5%)</button>
+  <button onclick="getLuckEvent()" class="Gainbutton">Get Lucky Event (75 iron and 250 stone)</button>
+  <script>
+    let day = 1;
+    let wood = 50;
+    let stone = 40;
+    let iron = 30;
+    let animal = 5;
+    let money = 150;
+    let humans = 10;
+
+    let description = ''; // Moved here
+    
+
+    // upgrades
+    let upgradeR = 1;
+    let upgradeS = 1;
+    let progress = 1;
+    function runGame() {
+      const dayButton = document.getElementById('dayButton');
+
+      // Disable button and show cooldown
+      dayButton.disabled = true;
+      dayButton.innerText = 'Cooldown...';
+
+      setTimeout(() => {
+        dayButton.disabled = false;
+        dayButton.innerText = 'Start Day';
+      }, 1000); // 1 second cooldown
+
+      
+      day++;
+      const randomEvent = Math.floor(Math.random() * 11);
+      const randomItem = ['wood', 'stone', 'iron', 'animal', 'money'][Math.floor(Math.random() * 5)];
+
+      if (randomEvent == 1) {
+        description = 'A storm has damged your village!';
+        humans -= 2;
+        wood -= 10;
+        stone -= 5;
+        iron -= 3;
+        animal -= 1;
+      } else if (randomEvent == 2) {
+        description = 'Your village has invaded by bandits!';
+        money /= 2;
+        iron -= 15;
+        animal -= 3;
+      } else {
+       switch (randomItem) {
+        case 'wood':
+          let nwood = (randomEvent * humans * upgradeR) / 3;
+          description = `You collected ${Math.floor(nwood)} wood.`;
+          wood += nwood;
+          break;
+        case 'stone':
+          let nstone = (randomEvent * humans * upgradeR) / 2;
+          description = `You collected ${Math.floor(nstone)} stone.`;
+          stone += nstone;
+          break;
+        case 'iron':
+          let niron = (randomEvent * humans * upgradeR) / 4;
+          description = `You collected ${Math.floor(niron)} iron.`;
+          iron += niron;
+          break;
+        case 'animal':
+          let nanimal = (randomEvent * humans * upgradeR) / 5;
+          description = `You found ${Math.floor(nanimal)} animals.`;
+          animal += nanimal;
+          break;
+        case 'money':
+          let nmoney = randomEvent * humans * upgradeR;
+          description = `You found ${Math.floor(nmoney)} money.`;
+          money += nmoney;
+          break;
+      }
+
+  }
+
+  updatestats();
+}
+
+
+     function updatestats() {
+      // Clamp values to 0 and round
+      wood = Math.max(0, Math.floor(wood));
+      stone = Math.max(0, Math.floor(stone));
+      iron = Math.max(0, Math.floor(iron));
+      money = Math.max(0, Math.floor(money));
+      animal = Math.max(0, Math.floor(animal));
+      humans = Math.max(0, Math.floor(humans));
+
+      document.getElementById('wood').innerText = wood + ' (buy price: 8/sell price: 5)';
+      document.getElementById('stone').innerText = stone + ' (buy price: 5/sell price: 3)';
+      document.getElementById('iron').innerText = iron + ' (buy price: 25/sell price: 10)';
+      document.getElementById('animal').innerText = animal + ' (buy price: 50/sell price: 20)';
+      document.getElementById('money').innerText = money;
+      document.getElementById('humans').innerText = humans;
+
+      document.getElementById('wood').style.color = wood > 0 ? 'lightgreen' : 'red';
+      document.getElementById('stone').style.color = stone > 0 ? 'lightgreen' : 'red';
+      document.getElementById('iron').style.color = iron > 0 ? 'lightgreen' : 'red';
+      document.getElementById('money').style.color = money > 0 ? 'lightgreen' : 'red';
+      document.getElementById('animal').style.color = animal > 0 ? 'lightgreen' : 'red';
+      document.getElementById('humans').style.color = humans > 0 ? 'lightgreen' : 'red';
+
+      document.getElementById('day').innerText = day;
+      document.getElementById('costR').innerText = `${Math.round(100 * progress)}$`;
+      document.getElementById('costS').innerText = `${Math.round(250 * progress)}$`;
+
+      document.getElementById('dis').innerText = description;
+
+      if (humans > 0 && humans < 20) {
+        document.getElementById('rank').innerText = 'Rank: Village';
+      } else if (humans >= 20 && humans < 50) {
+        document.getElementById('rank').innerText = 'Rank: Town';
+      } else if (humans >= 50 && humans < 100) {
+        document.getElementById('rank').innerText = 'Rank: Plaza';
+      } else if (humans >= 100 && humans < 200) {
+        document.getElementById('rank').innerText = 'Rank: City';
+      } else if (humans <= 200 && humans < 500) {
+        document.getElementById('rank').innerText = 'Rank: Island';
+      } else if (humans >= 500 && humans < 1000) {
+        document.getElementById('rank').innerText = 'Rank: Kingdom';
+      } else {
+        document.getElementById('rank').innerText = 'Rank: Empire';
+      }
+
+      if (humans <= 0) {
+        alert('Game Over! Your humans have perished.');
+        resetGame();
+      }
+    }
+
+    function resetGame() {
+      day = 1;
+      wood = 50;
+      stone = 40;
+      iron = 30;
+      money = 200;
+      humans = 10;
+      description = 'Game reset. Start again!';
+      updatestats();
+    }
+  
+    function getHuman() {
+      people = parseInt(document.getElementById('people').value);
+
+      if (isNaN(people) || people <= 0) {
+        description = 'Please enter a valid amount of people to increase population.';
+        updatestats();
+        return;
+      }
+
+      if (wood >= 15 * people && animal >= 3 * people && money >= 25 * people) {
+        humans += people;
+        wood -= 15 * people;
+        animal -= 3 * people;
+        money -= 25 * people;
+        description = `You have successfully increased your population by ${people}.`;
+      } else {
+        description = 'You need at least 15 wood, 3 animals, and 25 money per person to increase your population.';
+      }
+      updatestats();
+    }
+    
+    function sell() {
+
+      selltype = document.getElementById('source').value;
+      amount = parseInt(document.getElementById('amount').value);
+      if (isNaN(amount) || amount <= 0) {
+        description = 'Please enter a valid amount to sell.';
+        updatestats();
+        return;
+      }
+
+      if (selltype === 'wood' && wood >= amount) {
+        wood -= amount;
+        money += amount * 5 * upgradeS; // Selling wood for 5 money per unit
+        description = `Sold ${amount} wood for ${amount * 2 * upgradeS} money.`;
+      } else if (selltype === 'stone' && stone >= amount) {
+        stone -= amount;
+        money += amount * 3 * upgradeS; // Selling stone for 3 money per unit
+        description = `Sold ${amount} stone for ${amount * 3 * upgradeS} money.`;
+      } else if (selltype === 'iron' && iron >= amount) {
+        iron -= amount;
+        money += amount * 10 * upgradeS; // Selling iron for 10 money per unit
+        description = `Sold ${amount} iron for ${amount * 10 * upgradeS} money.`;
+      } else if (selltype === 'animal' && animal >= amount) {
+        animal -= amount;
+        money += amount * 20 * upgradeS; // Selling animal for 20 money per unit
+        description = `Sold ${amount} animals for ${amount * 20 * upgradeS} money.`;
+      } else {
+        description = `Not enough ${selltype} to sell or invalid type.`;
+      }
+
+      updatestats();
+    }
+ 
+    function trade() {
+        tradeItem = document.getElementById('item').value;
+        const rewardItem = ['wood', 'stone', 'iron', 'animal', 'money'][Math.floor(Math.random() * 5)]; 
+
+        if (tradeItem !== 'wood' && tradeItem !== 'stone' && tradeItem !== 'iron' && tradeItem !== 'animal') {
+          description = 'Invalid trade item. Please enter wood, stone, iron, or animal.';
+          updatestats();
+          return;
+        }
+
+        if ((tradeItem === 'wood' && wood < 5) ||
+            (tradeItem === 'stone' && stone < 5) ||
+            (tradeItem === 'iron' && iron < 5) ||
+            (tradeItem === 'animal' && animal < 5)) {
+          description = `Not enough ${tradeItem} to trade.`;
+          updatestats();
+          return;
+        }
+
+        switch (tradeItem) {
+          case 'wood': wood -= 5; break;
+          case 'stone': stone -= 5; break;
+          case 'iron': iron -= 5; break;
+          case 'animal': animal -= 5; break;
+        }
+
+        if (rewardItem === 'wood') {
+          description = `Traded 5 ${tradeItem} for 1 wood.`; 
+          wood += 1;
+        } else if (rewardItem === 'stone') {
+          description = `Traded 5 ${tradeItem} for 1 stone.`;
+          stone += 1;
+        } else if (rewardItem === 'iron') {
+          description = `Traded 5 ${tradeItem} for 1 iron.`;
+          iron += 1;
+        } else if (rewardItem === 'animal') {
+          description = `Traded 5 ${tradeItem} for 1 animal.`;
+          animal += 1;
+        }
+
+        updatestats();
+
+    }
+ 
+    function buy() {
+      const sale = document.getElementById('buyer').value;
+      const bulk = parseInt(document.getElementById('bulk').value);
+
+      if (sale !== 'wood' && sale !== 'stone' && sale !== 'iron' && sale !== 'animal') {
+        description = 'Invalid item to buy. Please enter wood, stone, iron, or animal.';
+        updatestats();
+        return;
+      } else if (isNaN(bulk) || bulk <= 0) {
+        description = 'Please enter a valid amount to buy.';
+        updatestats();
+        return;
+      }
+
+      switch (sale) {
+        case 'wood':
+          if (money < 8 * bulk) {
+            description = 'Not enough money to buy wood.';
+            updatestats();
+            return;
+          }
+
+          wood += 1 * bulk;
+          money -= 8 * bulk; // Buying wood for 8 money per unit
+          description = `Bought ${bulk} wood for ${8 * bulk} money.`;
+          break;
+        case 'stone':
+          if (money < 5 * bulk) {
+            description = 'Not enough money to buy stone.';
+            updatestats();
+            return;
+          }
+
+          stone += 1 * bulk;
+          money -= 5 * bulk; // Buying stone for 5 money per unit
+          description = `Bought ${bulk} stone for ${5 * bulk} money.`;
+          break;
+        case 'iron':
+          if (money < 25 * bulk) {
+            description = 'Not enough money to buy iron.';
+            updatestats();
+            return;
+          }
+
+          iron += 1 * bulk;
+          money -= 25 * bulk; // Buying iron for 15 money per unit
+          description = `Bought ${bulk} iron for ${25 * bulk} money.`;
+          break;
+        case 'animal':
+          if (money < 50 * bulk) {
+            description = 'Not enough money to buy animals.';
+            updatestats();
+            return;
+          }
+
+          animal += 1 * bulk;
+          money -= 50 * bulk; // Buying animal for 25 money per unit
+          description = `Bought ${bulk} animal for ${50 * bulk} money.`;
+          break;
+      }
+
+      updatestats();
+    }
+
+    function increaseR() {
+      if (money >= 100 * progress) {
+        money -= 100;
+        upgradeR += 0.1; // Increase collection rate by 10%
+        description = `Resource collection rate increased by 10%. Current rate: X${upgradeR.toFixed(2)}`;
+        progress += 0.15; // Increase progress for next upgrade
+      } else {
+        description = 'Not enough money to upgrade resource collection rate.';
+      }
+      updatestats();
+    }
+ 
+    function increaseS() {
+      if (money >= 250 * progress) {
+        money -= 250;
+        upgradeS += 0.05; // Increase sell rate by 5%
+        description = `Sell rate increased by 5%. Current rate: X${upgradeS.toFixed(2)
+}`;
+        progress += 0.15; // Increase progress for next upgrade
+      } else {
+        description = 'Not enough money to upgrade sell rate.';
+      }
+      updatestats();
+    }
+    
+    function getLuckEvent() {
+      if (iron >= 75 && stone >= 250) {
+        description = 'A lucky event has happened!';
+        const luckEvent = Math.floor(Math.random() * 3) + 1; // Random event between 1 and 5
+        switch (luckEvent) {
+          case 1:
+            wood += 100;
+            stone += 100;
+            iron += 50;
+            animal += 50;
+            description += ' Lucky!: You found 100 wood!, 100 stone!, 50 iron!, 50 animals!';
+            break;
+          case 2:
+            money += 1000;
+            description += ' Lucky!: You found 1000 money!';
+            break;
+          case 3:
+            humans += 5;
+            description += ' Lucky!: You found 5 humans!';
+            break;
+        }
+        iron -= 75;
+        stone -= 250;
+
+      } else {
+        description = 'You need at least 75 iron and 250 stone to buy a lucky event.';
+      }
+      updatestats();
+    }
+    
+    
+ </script>
+
+</body>
+</html>
