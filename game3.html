@@ -1,195 +1,234 @@
+<!-- Updated RPG game with evade, defense, and crit stats in shop and battle -->
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
   <meta charset="UTF-8" />
-  <title>Game Luck</title>
-  <style>
-    body {
-      background-color: black;
-      color: white;
-      font-family: 'Segoe UI', sans-serif;
-      text-align: center;
-      padding-top: 50px;
-    }
-
-    .button {
-      background: linear-gradient(135deg, blue, lightblue);
-      border: none;
-      border-radius: 35%;
-      padding: 32px 70px;
-      font-size: 24px;
-      cursor: pointer;
-      transition: transform 0.2s, box-shadow 0.3s, opacity 0.3s;
-      color: white;
-    }
-
-    .button:hover:not(:disabled) {
-      transform: scale(1.05);
-      box-shadow: 0 0 20px darkblue;
-    }
-
-    .button:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-      transform: none;
-      box-shadow: none;
-      background: linear-gradient(135deg, #666, #999);
-    }
-
-    #demo {
-      font-size: 2.5em;
-      margin-top: 30px;
-      transition: all 0.5s ease;
-    }
-
-    .flash {
-      animation: flashEffect 0.6s ease-out;
-    }
-
-    @keyframes flashEffect {
-      0%   { transform: scale(1); opacity: 1; }
-      50%  { transform: scale(1.5); opacity: 0.8; }
-      100% { transform: scale(1); opacity: 1; }
-    }
-
-    .countdown {
-      font-size: 0.8em;
-      color: #ccc;
-      margin-top: 10px;
-    }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <title>RPG</title>
 </head>
-<body>
+<body class="bg-black text-white flex flex-col items-center justify-center min-h-screen">
+  <h1 id="lvl" class="text-4xl font-bold mb-6">LVL: 1</h1>
 
-  <h1>Game</h1>
-  <button onclick="luck()" class="button" id="roller">Roll</button>
-  <div id="countdown" class="countdown"></div>
-  <h1 id="demo">Press the button</h1>
-  <h3 id="counter">0</h3>
 
-  <h2 id="c">amount of Common:</h2>
-  <h2 id="u">amount of Uncommon:</h2>
-  <h2 id="r">amount of Rare:</h2>
-  <h2 id="e">amount of Epic:</h2>
-  <h2 id="l">amount of Legendary:</h2>
-  <h2 id="m">amount of Mythic:</h2>
-  <h2 id="ee">amount of Exotic:</h2>
-  <h2 id="d">amount of Divine:</h2>
-  <h2 id="ce">amount of Celestial:</h2>
-  <h2 id="g">amount of Godlike:</h2>
+  <button id="proceedbutton" class="px-10 py-3 bg-white text-black rounded hover:bg-green-700 transition mt-4" onclick="proceed()">Proceed</button>
+  <button id="shopbutton" class="px-10 py-3 bg-yellow-500 text-black rounded hover:bg-yellow-600 transition mt-4 hidden" onclick="openShop()">Visit Shop</button>
+
+
+  <h1 id="enemy" class="text-5xl font-bold mt-8">place holder</h1>
+  <h1 id="battlecontext" class="text-3xl mt-2"></h1>
+
+
+  <div id="actionbutton" class="mt-12 hidden flex flex-wrap gap-4 justify-center">
+    <button class="px-10 py-3 bg-red-600 text-white rounded hover:bg-red-700 transition" onclick="attackEnemy()">Attack</button>
+    <button class="px-10 py-3 bg-blue-600 text-white rounded hover:bg-blue-700 transition" onclick="defend()">Defend</button>
+    <button class="px-10 py-3 bg-green-600 text-white rounded hover:bg-green-700 transition" onclick="heal()">Heal</button>
+    <button class="px-10 py-3 bg-orange-600 text-white rounded hover:bg-orange-700 transition" onclick="run()">Run</button>
+  </div>
+
+
+  <div id="userstats" class="mt-12 text-center">
+    <h2 class="text-3xl font-bold">Your Stats</h2>
+    <p>MAXHP: <span id="maxHp">100</span></p>
+    <p>HP: <span id="playerHp">100</span></p>
+    <p>ATK: <span id="playerAtk">20</span></p>
+    <p>Heal: <span id="healAmount">15</span></p>
+    <p>DEF: <span id="playerDef">0</span></p>
+    <p>EVASION: <span id="playerEvade">0</span>%</p>
+    <p>CRIT: <span id="playerCrit">5</span>%</p>
+    <p>Coins: <span id="playerCoins">100</span></p>
+  </div>
+
+
+  <div id="shop" class="hidden mt-8 text-center bg-gray-800 p-6 rounded-lg shadow-lg">
+    <h2 class="text-2xl font-bold mb-4">🛒 Shop</h2>
+    <button onclick="buyStat('atk', 50, 5)" class="bg-green-500 text-black px-4 py-2 m-2 rounded hover:bg-green-600">+5 ATK (50 coins)</button>
+    <button onclick="buyStat('healAmount', 30, 5)" class="bg-blue-500 text-black px-4 py-2 m-2 rounded hover:bg-blue-600">+5 Heal (30 coins)</button>
+    <button onclick="buyStat('hp', 20, 'full')" class="bg-red-500 text-black px-4 py-2 m-2 rounded hover:bg-red-600">Restore HP to full (20 coins)</button>
+    <button onclick="buyStat('def', 60, 3)" class="bg-gray-400 text-black px-4 py-2 m-2 rounded hover:bg-gray-500">+3 DEF (80 coins)</button>
+    <button onclick="buyStat('evade', 75, 5)" class="bg-purple-400 text-black px-4 py-2 m-2 rounded hover:bg-purple-500">+5% Evade (75 coins)</button>
+    <button onclick="buyStat('crit', 75, 5)" class="bg-yellow-400 text-black px-4 py-2 m-2 rounded hover:bg-yellow-500">+5% Crit (75 coins)</button>
+    <button onclick="buyStat('maxhp', 100, 20)" class="bg-pink-400 text-black px-4 py-2 m-2 rounded hover:bg-yellow-500">+20 MAXHP (100 coins)</button>
+
+    <br />
+    <button onclick="closeShop()" class="bg-white text-black px-6 py-2 mt-4 rounded hover:bg-gray-200">Exit Shop</button>
+  </div>
+
 
   <script>
-    let counter = 0;
-    let c = 0, u = 0, r = 0, e = 0, l = 0, m = 0, ee = 0, d = 0, ce = 0, g = 0;
-    let isRolling = false;
+    let amountofheals = 5;
+    let level = 0;
+    let currentEnemy = null;
 
-    function flashText(textElement) {
-      textElement.classList.remove("flash");
-      void textElement.offsetWidth; // reflow trick to restart animation
-      textElement.classList.add("flash");
+
+    const player = {
+      maxhp: 100,
+      hp: 100,
+      atk: 20,
+      healAmount: 15,
+      coins: 100,
+      evade: 0,
+      def: 0,
+      crit: 0
+    };
+
+
+    function updateUI() {
+      document.getElementById("maxHp").innerText = player.maxhp;
+      document.getElementById("playerHp").innerText = player.hp;
+      document.getElementById("playerAtk").innerText = player.atk;
+      document.getElementById("healAmount").innerText = player.healAmount;
+      document.getElementById("playerCoins").innerText = player.coins;
+      document.getElementById("playerDef").innerText = player.def;
+      document.getElementById("playerEvade").innerText = player.evade;
+      document.getElementById("playerCrit").innerText = player.crit;
+      document.getElementById("lvl").innerText = `LVL: ${level}`;
     }
 
-    function sleep(ms) {
-      return new Promise(resolve => setTimeout(resolve, ms));
+
+    function proceed() {
+      level++;
+      amountofheals = 3;
+      updateEnemy();
+      updateUI();
     }
 
-    function startCountdown() {
-      const countdownElement = document.getElementById("countdown");
-      let timeLeft = 1;
-      
-      const countdownInterval = setInterval(() => {
-        if (timeLeft > 0) {
-          countdownElement.textContent = `Wait ${timeLeft} second${timeLeft > 1 ? 's' : ''}...`;
-          timeLeft--;
-        } else {
-          countdownElement.textContent = "";
-          clearInterval(countdownInterval);
-        }
-      }, 1000);
+
+    function generateEnemy(type) {
+      const baseStats = {
+        Zombie: [95, 7, 15],
+        Bandit: [70, 10, 28],
+        Dragon: [150, 35, 40]
+      };
+      const [baseHp, baseAtk, baseCoins] = baseStats[type];
+      return {
+        name: type,
+        hp: baseHp + level * 5,
+        atk: baseAtk + level * 3,
+        coins: baseCoins + level * 6
+      };
     }
 
-    async function luck() {
-      // Prevent multiple clicks
-      if (isRolling) return;
-      
-      const demo = document.getElementById("demo");
-      const roller = document.getElementById("roller");
 
-      // Set rolling state and disable button
-      isRolling = true;
-      roller.disabled = true;
-      roller.textContent = "Rolling...";
-      
-      // Start countdown display
-      startCountdown();
+    function updateEnemy() {
+      const types = ["Zombie", "Bandit", "Dragon"];
+      currentEnemy = generateEnemy(types[Math.floor(Math.random() * types.length)]);
+      document.getElementById("enemy").innerText = `A ${currentEnemy.name} has appeared! HP: ${currentEnemy.hp} ATK: ${currentEnemy.atk}`;
+      document.getElementById("battlecontext").innerText = "";
+      document.getElementById("proceedbutton").style.display = "none";
+      document.getElementById("shopbutton").classList.add("hidden");
+      document.getElementById("actionbutton").classList.remove("hidden");
+    }
 
-      let rare = Math.floor(Math.random() * 10010) + 1;
 
-      if (rare <= 2) { // 0.02%
-        g++;
-        demo.innerHTML = "👑 Godlike 0.02%";
-        demo.style.color = "magenta";
-        document.getElementById("g").innerHTML = "Amount of Godlike: " + g;
-      } else if (rare <= 10) { // 0.08%
-        ce++;
-        demo.innerHTML = "🌌 Celestial 0.08%";
-        demo.style.color = "deepskyblue";
-        document.getElementById("ce").innerHTML = "Amount of Celestial: " + ce;
-      } else if (rare <= 20) { // 0.1%
-        d++;
-        demo.innerHTML = "✨ Divine 0.1%";
-        demo.style.color = "gold";
-        document.getElementById("d").innerHTML = "Amount of Divine: " + d;
-      } else if (rare <= 54) { // 0.34%
-        ee++;
-        demo.innerHTML = "🎆 Exotic 0.34%";
-        demo.style.color = "white";
-        document.getElementById("ee").innerHTML = "Amount of Exotic: " + ee;
-      } else if (rare <= 104) { // 0.5%
-        m++;
-        demo.innerHTML = "🔥 Mythic 0.5%";
-        demo.style.color = "red";
-        document.getElementById("m").innerHTML = "Amount of Mythic: " + m;
-      } else if (rare <= 204) { // 1%
-        l++;
-        demo.innerHTML = "🌟 Legendary 1%";
-        demo.style.color = "yellow";
-        document.getElementById("l").innerHTML = "Amount of Legendary: " + l;
-      } else if (rare <= 1104) { // 9%
-        e++;
-        demo.innerHTML = "💎 Epic 9%";
-        demo.style.color = "purple";
-        document.getElementById("e").innerHTML = "Amount of Epic: " + e;
-      } else if (rare <= 2604) { // 15%
-        r++;
-        demo.innerHTML = "🔷 Rare 15%";
-        demo.style.color = "blue";
-        document.getElementById("r").innerHTML = "Amount of Rare: " + r;
-      } else if (rare <= 5504) { // 29%
-        u++;
-        demo.innerHTML = "🟢 Uncommon 29%";
-        demo.style.color = "green";
-        document.getElementById("u").innerHTML = "Amount of Uncommon: " + u;
-      } else { // 45%
-        c++;
-        demo.innerHTML = "⚪ Common 45%";
-        demo.style.color = "grey";
-        document.getElementById("c").innerHTML = "Amount of Common: " + c;
+    function attackEnemy() {
+      const isCrit = Math.random() < player.crit / 100;
+      const damage = isCrit ? player.atk * 2 : player.atk;
+      currentEnemy.hp -= damage;
+      document.getElementById("enemy").innerText = `You ${isCrit ? 'CRIT ' : ''}attacked the ${currentEnemy.name} for ${damage} damage!\nRemaining HP: ${Math.max(currentEnemy.hp, 0)}`;
+
+
+      if (currentEnemy.hp <= 0) {
+        player.coins += currentEnemy.coins;
+        document.getElementById("enemy").innerText = `You defeated the ${currentEnemy.name} & gained ${currentEnemy.coins} coins!`;
+        document.getElementById("actionbutton").classList.add("hidden");
+        document.getElementById("proceedbutton").style.display = "block";
+        document.getElementById("shopbutton").classList.remove("hidden");
+      } else {
+        enemyAttack();
       }
 
-      counter++;
-      document.getElementById("counter").innerText = "Rolls: " + counter;
-      flashText(demo);
 
-      // Wait for 2 seconds before re-enabling
-      await sleep(2000);
-      
-      // Re-enable button and reset state
-      roller.disabled = false;
-      roller.textContent = "Roll";
-      isRolling = false;
+      updateUI();
     }
-  </script>
 
+
+    function enemyAttack() {
+      if (Math.random() * 100 < player.evade) {
+        document.getElementById("battlecontext").innerText = `You dodged the attack from ${currentEnemy.name}!`;
+        return;
+      }
+      const raw = currentEnemy.atk;
+      const reduced = Math.max(raw - player.def, 0);
+      player.hp -= reduced;
+      document.getElementById("battlecontext").innerText = `The ${currentEnemy.name} attacked for ${reduced} damage! Your HP: ${player.hp}`;
+      if (player.hp <= 0) {
+        document.getElementById("battlecontext").innerText = "💀 You have been defeated!";
+        document.getElementById("actionbutton").classList.add("hidden");
+      }
+    }
+
+
+    function defend() {
+      player.coins += 15;
+      const raw = currentEnemy.atk / 2;
+      const reduced = Math.max(Math.floor(raw - player.def), 0);
+      player.hp -= reduced;
+      document.getElementById("enemy").innerText = "🛡️ You brace for the next attack! (+15 coins)";
+      document.getElementById("battlecontext").innerText = `The ${currentEnemy.name} hit for ${reduced} damage! Your HP: ${player.hp}`;
+      if (player.hp <= 0) document.getElementById("actionbutton").classList.add("hidden");
+      updateUI();
+    }
+
+
+    function heal() {
+      if (amountofheals > 0) {
+        player.hp = Math.min(player.hp + player.healAmount, player.maxhp);
+        document.getElementById("battlecontext").innerText = `💖 You healed for ${player.healAmount} HP!`;
+        amountofheals--;
+      } else {
+        document.getElementById("battlecontext").innerText = "You ran out of heals.";
+      }
+      updateUI();
+    }
+
+
+    function run() {
+      if (Math.random() > 0.5) {
+        document.getElementById("enemy").innerText = "🏃 You ran away!";
+        document.getElementById("actionbutton").classList.add("hidden");
+        document.getElementById("proceedbutton").style.display = "block";
+        document.getElementById("shopbutton").classList.remove("hidden");
+      } else {
+        document.getElementById("enemy").innerText = "You failed to run away!";
+        enemyAttack();
+      }
+      updateUI();
+    }
+
+
+    function buyStat(stat, cost, value) {
+      if (player.coins >= cost) {
+        player.coins -= cost;
+        if (value === 'full') {
+          player.hp = player.maxhp;
+        } else {
+          player[stat] += value;
+        }
+        updateUI();
+      } else {
+        alert("Not enough coins!");
+      }
+    }
+
+
+    function openShop() {
+      document.getElementById("shop").classList.remove("hidden");
+      document.getElementById("shopbutton").classList.add("hidden");
+      document.getElementById("proceedbutton").style.display = "none";
+    }
+
+
+    function closeShop() {
+      document.getElementById("shop").classList.add("hidden");
+      document.getElementById("proceedbutton").style.display = "block";
+    }
+
+
+    updateUI();
+  </script>
 </body>
 </html>
+
+
+
